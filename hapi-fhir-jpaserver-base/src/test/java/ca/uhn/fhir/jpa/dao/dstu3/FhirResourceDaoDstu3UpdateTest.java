@@ -2,7 +2,7 @@ package ca.uhn.fhir.jpa.dao.dstu3;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
@@ -15,7 +15,7 @@ import org.junit.*;
 import org.mockito.ArgumentCaptor;
 
 import ca.uhn.fhir.jpa.dao.DaoConfig;
-import ca.uhn.fhir.jpa.dao.SearchParameterMap;
+import ca.uhn.fhir.jpa.searchparam.SearchParameterMap;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.RestOperationTypeEnum;
@@ -252,6 +252,7 @@ public class FhirResourceDaoDstu3UpdateTest extends BaseJpaDstu3Test {
 		p.setId("Patient/A");
 		String id = myPatientDao.update(p).getId().getValue();
 		assertThat(id, endsWith("Patient/A/_history/1"));
+		assertEquals("1", myPatientDao.read(new IdType("Patient/A")).getIdElement().getVersionIdPart());
 
 		// Second time should not result in an update
 		p = new Patient();
@@ -259,6 +260,7 @@ public class FhirResourceDaoDstu3UpdateTest extends BaseJpaDstu3Test {
 		p.setId("Patient/A");
 		id = myPatientDao.update(p).getId().getValue();
 		assertThat(id, endsWith("Patient/A/_history/1"));
+		assertEquals("1", myPatientDao.read(new IdType("Patient/A")).getIdElement().getVersionIdPart());
 
 		// And third time should not result in an update
 		p = new Patient();
@@ -266,6 +268,7 @@ public class FhirResourceDaoDstu3UpdateTest extends BaseJpaDstu3Test {
 		p.setId("Patient/A");
 		id = myPatientDao.update(p).getId().getValue();
 		assertThat(id, endsWith("Patient/A/_history/1"));
+		assertEquals("1", myPatientDao.read(new IdType("Patient/A")).getIdElement().getVersionIdPart());
 
 		myPatientDao.read(new IdType("Patient/A"));
 		myPatientDao.read(new IdType("Patient/A/_history/1"));
@@ -303,6 +306,7 @@ public class FhirResourceDaoDstu3UpdateTest extends BaseJpaDstu3Test {
 
 		assertEquals("1", outcome.getId().getVersionIdPart());
 
+		ca.uhn.fhir.jpa.util.TestUtil.sleepOneClick();
 		Date now = new Date();
 		Patient retrieved = myPatientDao.read(outcome.getId(), mySrd);
 		InstantType updated = retrieved.getMeta().getLastUpdatedElement().copy();

@@ -4,7 +4,7 @@ package ca.uhn.fhir.jpa.search;
  * #%L
  * HAPI FHIR JPA Server
  * %%
- * Copyright (C) 2014 - 2017 University Health Network
+ * Copyright (C) 2014 - 2019 University Health Network
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,19 @@ package ca.uhn.fhir.jpa.search;
  * #L%
  */
 
-import java.util.List;
-
 import ca.uhn.fhir.jpa.dao.IDao;
-import ca.uhn.fhir.jpa.dao.SearchParameterMap;
+import ca.uhn.fhir.jpa.searchparam.SearchParameterMap;
+import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
+
+import java.util.List;
 
 public interface ISearchCoordinatorSvc {
 
+	void cancelAllActiveSearches();
+
 	List<Long> getResources(String theUuid, int theFrom, int theTo);
 
-	IBundleProvider registerSearch(IDao theCallingDao, SearchParameterMap theParams, String theResourceType);
-
-	void cancelAllActiveSearches();
+	IBundleProvider registerSearch(IDao theCallingDao, SearchParameterMap theParams, String theResourceType, CacheControlDirective theCacheControlDirective);
 
 }

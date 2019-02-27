@@ -4,7 +4,7 @@ package ca.uhn.fhir.rest.server.provider.dstu2;
  * #%L
  * HAPI FHIR Structures - DSTU2 (FHIR v1.0.0)
  * %%
- * Copyright (C) 2014 - 2017 University Health Network
+ * Copyright (C) 2014 - 2019 University Health Network
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -219,12 +219,15 @@ public class Dstu2BundleFactory implements IVersionSpecificBundleFactory {
 	}
 
 	@Override
-	public void addRootPropertiesToBundle(String theAuthor, String theServerBase, String theLinkSelf, String theLinkPrev, String theLinkNext, Integer theTotalResults, BundleTypeEnum theBundleType,
-			IPrimitiveType<Date> theLastUpdated) {
+	public void addRootPropertiesToBundle(String theId, String theServerBase, String theLinkSelf, String theLinkPrev, String theLinkNext, Integer theTotalResults, BundleTypeEnum theBundleType,
+													  IPrimitiveType<Date> theLastUpdated) {
 		ensureBundle();
 
 		myBase = theServerBase;
 
+		if (myBundle.getIdElement().isEmpty()) {
+			myBundle.setId(theId);
+		}
 		if (myBundle.getId().isEmpty()) {
 			myBundle.setId(UUID.randomUUID().toString());
 		}

@@ -47,7 +47,6 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 	@SuppressWarnings("deprecation")
 	@After
 	public void after() {
-		myRestServer.setUseBrowserFriendlyContentTypes(true);
 		ourClient.unregisterInterceptor(mySimpleHeaderInterceptor);
 		myDaoConfig.setMaximumSearchResultCountInTransaction(new DaoConfig().getMaximumSearchResultCountInTransaction());
 	}
@@ -126,7 +125,7 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 	}
 
 	@Test
-	public void testBatchWithGetHardLimitLargeSynchronous() throws Exception {
+	public void testBatchWithGetHardLimitLargeSynchronous() {
 		List<String> ids = create20Patients();
 		
 		Bundle input = new Bundle();
@@ -135,7 +134,7 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 			.addEntry()
 			.getRequest()
 			.setMethod(HTTPVerb.GET)
-			.setUrl("Patient?_count=5");
+			.setUrl("Patient?_count=5&_sort=_id");
 		
 		myDaoConfig.setMaximumSearchResultCountInTransaction(100);
 		
@@ -151,7 +150,7 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 	}
 	
 	@Test
-	public void testBatchWithGetNormalSearch() throws Exception {
+	public void testBatchWithGetNormalSearch() {
 		List<String> ids = create20Patients();
 		
 		Bundle input = new Bundle();
@@ -183,7 +182,7 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 	 * 30 searches in one batch! Whoa!
 	 */
 	@Test
-	public void testBatchWithManyGets() throws Exception {
+	public void testBatchWithManyGets() {
 		List<String> ids = create20Patients();
 
 		
@@ -211,7 +210,7 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 	}
 
 	@Test
-	public void testTransactionWithGetHardLimitLargeSynchronous() throws Exception {
+	public void testTransactionWithGetHardLimitLargeSynchronous() {
 		List<String> ids = create20Patients();
 		
 		Bundle input = new Bundle();
@@ -220,7 +219,7 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 			.addEntry()
 			.getRequest()
 			.setMethod(HTTPVerb.GET)
-			.setUrl("Patient?_count=5");
+			.setUrl("Patient?_count=5&_sort=_id");
 		
 		myDaoConfig.setMaximumSearchResultCountInTransaction(100);
 		
@@ -236,7 +235,7 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 	}
 	
 	@Test
-	public void testTransactionWithGetNormalSearch() throws Exception {
+	public void testTransactionWithGetNormalSearch() {
 		List<String> ids = create20Patients();
 		
 		Bundle input = new Bundle();
@@ -268,7 +267,7 @@ public class SystemProviderTransactionSearchDstu3Test extends BaseJpaDstu3Test {
 	 * 30 searches in one Transaction! Whoa!
 	 */
 	@Test
-	public void testTransactionWithManyGets() throws Exception {
+	public void testTransactionWithManyGets() {
 		List<String> ids = create20Patients();
 
 		

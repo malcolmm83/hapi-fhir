@@ -3,7 +3,6 @@ package ca.uhn.fhir.jpa.provider;
 import ca.uhn.fhir.jpa.config.WebsocketDispatcherConfig;
 import ca.uhn.fhir.jpa.dao.dstu2.BaseJpaDstu2Test;
 import ca.uhn.fhir.jpa.search.DatabaseBackedPagingProvider;
-import ca.uhn.fhir.jpa.subscription.resthook.SubscriptionRestHookInterceptor;
 import ca.uhn.fhir.jpa.testutil.RandomServerPortProvider;
 import ca.uhn.fhir.model.dstu2.resource.Bundle;
 import ca.uhn.fhir.model.dstu2.resource.Bundle.Entry;
@@ -24,6 +23,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -45,8 +45,9 @@ public abstract class BaseResourceProviderDstu2Test extends BaseJpaDstu2Test {
 	protected static Server ourServer;
 	protected static String ourServerBase;
 	protected static GenericWebApplicationContext ourWebApplicationContext;
-	protected static SubscriptionRestHookInterceptor ourRestHookSubscriptionInterceptor;
 	protected static DatabaseBackedPagingProvider ourPagingProvider;
+	protected static PlatformTransactionManager ourTxManager;
+	protected static Integer ourConnectionPoolSize;
 
 	public BaseResourceProviderDstu2Test() {
 		super();
@@ -82,6 +83,7 @@ public abstract class BaseResourceProviderDstu2Test extends BaseJpaDstu2Test {
 			ourRestServer.setServerConformanceProvider(confProvider);
 
 			ourPagingProvider = myAppCtx.getBean(DatabaseBackedPagingProvider.class);
+			ourConnectionPoolSize = myAppCtx.getBean("maxDatabaseThreadsForTest", Integer.class);
 			ourRestServer.setPagingProvider(ourPagingProvider);
 
 			Server server = new Server(ourPort);
@@ -97,7 +99,7 @@ public abstract class BaseResourceProviderDstu2Test extends BaseJpaDstu2Test {
 			ourWebApplicationContext.setParent(myAppCtx);
 			ourWebApplicationContext.refresh();
 
-			ourRestHookSubscriptionInterceptor = ourWebApplicationContext.getBean(SubscriptionRestHookInterceptor.class);
+			ourTxManager = ourWebApplicationContext.getBean(PlatformTransactionManager.class);
 
 			proxyHandler.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ourWebApplicationContext);
 
@@ -129,7 +131,7 @@ public abstract class BaseResourceProviderDstu2Test extends BaseJpaDstu2Test {
 	}
 
 	protected List<IdDt> toIdListUnqualifiedVersionless(Bundle found) {
-		List<IdDt> list = new ArrayList<IdDt>();
+		List<IdDt> list = new ArrayList<>();
 		for (Entry next : found.getEntry()) {
 			list.add(next.getResource().getId().toUnqualifiedVersionless());
 		}
@@ -137,7 +139,7 @@ public abstract class BaseResourceProviderDstu2Test extends BaseJpaDstu2Test {
 	}
 
 	protected List<String> toNameList(Bundle resp) {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		for (Entry next : resp.getEntry()) {
 			Patient nextPt = (Patient) next.getResource();
 			String nextStr = nextPt.getNameFirstRep().getGivenAsSingleString() + " " + nextPt.getNameFirstRep().getFamilyAsSingleString();

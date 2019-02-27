@@ -4,7 +4,7 @@ package ca.uhn.fhir.parser;
  * #%L
  * HAPI FHIR - Core Library
  * %%
- * Copyright (C) 2014 - 2017 University Health Network
+ * Copyright (C) 2014 - 2019 University Health Network
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -606,7 +606,7 @@ class ParserState<T> {
 				return;
 			}
 			case RESOURCE: {
-				if (myInstance instanceof IAnyResource || myInstance instanceof IBaseBackboneElement) {
+				if (myInstance instanceof IAnyResource || myInstance instanceof IBaseBackboneElement || myInstance instanceof IBaseElement) {
 					ParserState<T>.PreResourceStateHl7Org state = new PreResourceStateHl7Org(myInstance, child.getMutator(), null);
 					push(state);
 				} else {
@@ -806,7 +806,7 @@ class ParserState<T> {
 				@SuppressWarnings("unchecked")
 				List<IBase> securityLabels = (List<IBase>) myMap.get(ResourceMetadataKeyEnum.SECURITY_LABELS);
 				if (securityLabels == null) {
-					securityLabels = new ArrayList<IBase>();
+					securityLabels = new ArrayList<>();
 					myMap.put(ResourceMetadataKeyEnum.SECURITY_LABELS, securityLabels);
 				}
 				IBase securityLabel = myContext.getVersion().newCodingDt();
@@ -839,6 +839,25 @@ class ParserState<T> {
 				push(new SwallowChildrenWholeState(getPreResourceState()));
 				return;
 			}
+		}
+
+		@Override
+		public void enteringNewElementExtension(StartElement theElem, String theUrlAttr, boolean theIsModifier, final String baseServerUrl) {
+			ResourceMetadataKeyEnum.ExtensionResourceMetadataKey resourceMetadataKeyEnum = new ResourceMetadataKeyEnum.ExtensionResourceMetadataKey(theUrlAttr);
+			Object metadataValue = myMap.get(resourceMetadataKeyEnum);
+			ExtensionDt newExtension;
+			if (metadataValue == null) {
+				newExtension = new ExtensionDt(theIsModifier);
+			} else if (metadataValue instanceof ExtensionDt) {
+				newExtension = (ExtensionDt) metadataValue;
+			} else {
+				throw new IllegalStateException("Expected ExtensionDt as custom resource metadata type, got: " + metadataValue.getClass().getSimpleName());
+			}
+			newExtension.setUrl(theUrlAttr);
+			myMap.put(resourceMetadataKeyEnum, newExtension);
+
+			ExtensionState newState = new ExtensionState(getPreResourceState(), newExtension);
+			push(newState);
 		}
 
 	}
@@ -1267,9 +1286,7 @@ class ParserState<T> {
 				} else {
 					try {
 						myInstance.setValueAsString(theValue);
-					} catch (DataFormatException e) {
-						myErrorHandler.invalidValue(null, theValue, e.getMessage());
-					} catch (IllegalArgumentException e) {
+					} catch (DataFormatException | IllegalArgumentException e) {
 						myErrorHandler.invalidValue(null, theValue, e.getMessage());
 					}
 				}
@@ -1559,7 +1576,8 @@ class ParserState<T> {
 
 			if (theEvent.isEndElement()) {
 				if (myDepth == 0) {
-					myDt.setValue(myEvents);
+					String eventsAsString = XmlUtil.encode(myEvents);
+					myDt.setValue(eventsAsString);
 					doPop();
 				}
 			}

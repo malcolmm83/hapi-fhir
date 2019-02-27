@@ -4,7 +4,7 @@ package ca.uhn.fhir.rest.server;
  * #%L
  * HAPI FHIR - Server Framework
  * %%
- * Copyright (C) 2014 - 2017 University Health Network
+ * Copyright (C) 2014 - 2019 University Health Network
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@ public class IncomingRequestAddressStrategy implements IServerAddressStrategy {
 
 	@Override
 	public String determineServerBase(ServletContext theServletContext, HttpServletRequest theRequest) {
+		if (theRequest == null) {
+			return null;
+		}
 		String requestFullPath = StringUtils.defaultString(theRequest.getRequestURI());
 
 		String servletPath;

@@ -4,7 +4,7 @@ package ca.uhn.fhir.rest.client.impl;
  * #%L
  * HAPI FHIR - Client Framework
  * %%
- * Copyright (C) 2014 - 2017 University Health Network
+ * Copyright (C) 2014 - 2019 University Health Network
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -301,7 +301,7 @@ public abstract class RestfulClientFactory implements IRestfulClientFactory {
 				conformance = (IBaseResource) client.fetchConformance().ofType(implementingClass).execute();
 			} catch (FhirClientConnectionException e) {
 				if (!myContext.getVersion().getVersion().isOlderThan(FhirVersionEnum.DSTU3) && e.getCause() instanceof DataFormatException) {
-					capabilityStatementResourceName = "Conformance";
+					capabilityStatementResourceName = "CapabilityStatement";
 					implementingClass = myContext.getResourceDefinition(capabilityStatementResourceName).getImplementingClass();
 					conformance = (IBaseResource) client.fetchConformance().ofType(implementingClass).execute();
 				} else {
@@ -330,6 +330,8 @@ public abstract class RestfulClientFactory implements IRestfulClientFactory {
 				serverFhirVersionEnum = FhirVersionEnum.DSTU2_1;
 			} else if (serverFhirVersionString.equals(FhirVersionEnum.DSTU3.getFhirVersionString())) {
 				serverFhirVersionEnum = FhirVersionEnum.DSTU3;
+			} else if (serverFhirVersionString.equals(FhirVersionEnum.R4.getFhirVersionString())) {
+				serverFhirVersionEnum = FhirVersionEnum.R4;
 			} else {
 				// we'll be lenient and accept this
 				ourLog.debug("Server conformance statement indicates unknown FHIR version: {}", serverFhirVersionString);
